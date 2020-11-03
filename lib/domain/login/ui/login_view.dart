@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:salesmgmt/app/router/router.gr.dart';
 import 'package:salesmgmt/app/services/auth/model/authentication_request.dart';
 import 'package:salesmgmt/app/services/auth/service/auth_service.dart';
 import 'package:salesmgmt/domain/login/services/login_services.dart';
 import 'package:salesmgmt/domain/login/services/opacity_animation.dart';
 import 'package:salesmgmt/domain/login/services/translateY_animation.dart';
 import 'package:salesmgmt/domain/login/widgets/flatBtnWithBoldText.dart';
+import 'package:salesmgmt/domain/sales/ui/screens/sales_view.dart';
 
 class LoginView extends StatefulWidget {
   @override
@@ -57,7 +57,7 @@ class _LoginViewState extends State<LoginView>
             await _loginService.authorize(authenticationResponse.accessToken);
 
         if (user != null) {
-          Get.offAllNamed(Routes.salesView);
+          Get.offAll(SalesView());
         }
       }
     } catch (error) {
