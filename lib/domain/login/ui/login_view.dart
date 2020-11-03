@@ -1,5 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:salesmgmt/app/router/router.gr.dart';
+import 'package:salesmgmt/app/services/auth/model/authentication_request.dart';
+import 'package:salesmgmt/app/services/auth/service/auth_service.dart';
+import 'package:salesmgmt/domain/login/services/login_services.dart';
 import 'package:salesmgmt/domain/login/services/opacity_animation.dart';
 import 'package:salesmgmt/domain/login/services/translateY_animation.dart';
 import 'package:salesmgmt/domain/login/widgets/flatBtnWithBoldText.dart';
@@ -17,15 +22,15 @@ class _LoginViewState extends State<LoginView>
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
+
+  LoginService _loginService = Get.put(LoginService());
   @override
   void initState() {
     _controller =
         AnimationController(vsync: this, duration: Duration(milliseconds: 500));
     _heightAnimation = Tween<Size>(
-                begin: Size(double.infinity, 175),
-                end: Size(double.infinity, 275))
-            .animate(CurvedAnimation(parent: _controller, curve: Curves.ease))
-        as Animation;
+            begin: Size(double.infinity, 175), end: Size(double.infinity, 275))
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
     _heightAnimation.addListener(() {
       setState(() {});
     });
@@ -39,6 +44,25 @@ class _LoginViewState extends State<LoginView>
     _passwordController.dispose();
     _usernameController.dispose();
     super.dispose();
+  }
+
+  void _authenticate(BuildContext context) async {
+    try {
+      final authenticationResponse = await _loginService.authenticate(
+          AuthenticationRequest(
+              userName: _usernameController.text.trim(),
+              password: _passwordController.text.trim()));
+      if (authenticationResponse != null) {
+        final user =
+            await _loginService.authorize(authenticationResponse.accessToken);
+
+        if (user != null) {
+          Get.offAllNamed(Routes.salesView);
+        }
+      }
+    } catch (error) {
+      Get.showSnackbar(error.response.data['message']);
+    }
   }
 
   @override
@@ -102,9 +126,9 @@ class _LoginViewState extends State<LoginView>
                                     TextField(
                                       decoration: InputDecoration(
                                         border: OutlineInputBorder(),
-                                        labelText: 'Full Name',
+                                        labelText: 'Email',
                                       ),
-                                      controller: _usernameController,
+                                      controller: _emailController,
                                     ),
                                     SizedBox(
                                       height: 20,
@@ -115,9 +139,9 @@ class _LoginViewState extends State<LoginView>
                           TextField(
                             decoration: InputDecoration(
                               border: OutlineInputBorder(),
-                              labelText: 'Email',
+                              labelText: 'Full Name',
                             ),
-                            controller: _emailController,
+                            controller: _usernameController,
                           ),
                           SizedBox(
                             height: 20,
@@ -177,7 +201,7 @@ class _LoginViewState extends State<LoginView>
                           ),
                           padding: EdgeInsets.all(16),
                           onPressed: () {
-                            print(_emailController.text);
+                            _authenticate(context);
                           },
                         ),
                       ),
